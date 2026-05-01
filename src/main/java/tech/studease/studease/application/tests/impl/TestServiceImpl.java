@@ -86,7 +86,6 @@ public class TestServiceImpl implements TestService {
     if (!test.getAuthor().getEmail().equals(getUserFromAuthentication().getEmail())) {
       throw new TestNotFoundException(testId);
     }
-    test.getSamples().clear();
     testRepository.deleteById(testId);
   }
 
@@ -101,7 +100,6 @@ public class TestServiceImpl implements TestService {
           if (!t.getAuthor().getEmail().equals(getUserFromAuthentication().getEmail())) {
             throw new TestNotFoundException(t.getId());
           }
-          t.getSamples().clear();
         });
     testRepository.deleteAll(tests);
   }
