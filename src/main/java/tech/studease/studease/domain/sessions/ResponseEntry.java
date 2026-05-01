@@ -2,9 +2,12 @@ package tech.studease.studease.domain.sessions;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import java.util.List;
@@ -29,11 +32,39 @@ public class ResponseEntry {
   private Long id;
 
   @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(
+      name = "question_id",
+      foreignKey =
+          @ForeignKey(
+              foreignKeyDefinition =
+                  "FOREIGN KEY (question_id) REFERENCES question(id) ON DELETE CASCADE"))
   private Question question;
 
   @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(
+      name = "response_entry_answers",
+      joinColumns =
+          @JoinColumn(
+              name = "response_entry_id",
+              foreignKey =
+                  @ForeignKey(
+                      foreignKeyDefinition =
+                          "FOREIGN KEY (response_entry_id) REFERENCES response_entry(id) ON DELETE CASCADE")),
+      inverseJoinColumns =
+          @JoinColumn(
+              name = "answers_id",
+              foreignKey =
+                  @ForeignKey(
+                      foreignKeyDefinition =
+                          "FOREIGN KEY (answers_id) REFERENCES answer(id) ON DELETE CASCADE")))
   private List<Answer> answers;
 
   @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(
+      name = "test_session_id",
+      foreignKey =
+          @ForeignKey(
+              foreignKeyDefinition =
+                  "FOREIGN KEY (test_session_id) REFERENCES test_session(id) ON DELETE CASCADE"))
   private TestSession testSession;
 }

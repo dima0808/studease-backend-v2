@@ -16,7 +16,9 @@ import tech.studease.studease.application.collections.mapper.CollectionMapper;
 import tech.studease.studease.domain.collections.Collection;
 import tech.studease.studease.domain.collections.CollectionRepository;
 import tech.studease.studease.domain.collections.exception.CollectionAlreadyExistsException;
+import tech.studease.studease.domain.collections.exception.CollectionInUseException;
 import tech.studease.studease.domain.collections.exception.CollectionNotFoundException;
+import tech.studease.studease.domain.samples.SampleRepository;
 import tech.studease.studease.domain.users.User;
 
 @Service
@@ -24,6 +26,7 @@ import tech.studease.studease.domain.users.User;
 public class CollectionServiceImpl implements CollectionService {
 
   private final CollectionRepository collectionRepository;
+  private final SampleRepository sampleRepository;
   private final CollectionMapper collectionMapper;
 
   @Override
@@ -63,6 +66,9 @@ public class CollectionServiceImpl implements CollectionService {
     if (!collectionRepository.existsByIdAndAuthorEmail(collectionId, authorEmail)) {
       throw new CollectionNotFoundException(collectionId);
     }
+    if (sampleRepository.existsByCollectionIdAndTestIsNotNull(collectionId)) {
+      throw new CollectionInUseException(collectionId);
+    }
     collectionRepository.deleteById(collectionId);
   }
 
@@ -78,6 +84,9 @@ public class CollectionServiceImpl implements CollectionService {
         c -> {
           if (!c.getAuthor().getEmail().equals(authorEmail)) {
             throw new CollectionNotFoundException(c.getId());
+          }
+          if (sampleRepository.existsByCollectionIdAndTestIsNotNull(c.getId())) {
+            throw new CollectionInUseException(c.getId());
           }
         });
     collectionRepository.deleteAll(collections);

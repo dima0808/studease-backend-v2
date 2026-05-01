@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import tech.studease.studease.domain.collections.exception.CollectionAlreadyExistsException;
+import tech.studease.studease.domain.collections.exception.CollectionInUseException;
 import tech.studease.studease.domain.sessions.exception.TestSessionAlreadyExistsException;
 import tech.studease.studease.domain.users.exception.TokenExpiredException;
 
@@ -62,20 +63,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.status(NOT_FOUND).body(errorResponse);
   }
 
-  @ExceptionHandler({TestSessionAlreadyExistsException.class, IllegalStateException.class})
-  public ResponseEntity<ErrorResponse> handleIllegalStateException(
-      IllegalStateException exc, WebRequest request) {
-    ErrorResponse errorResponse =
-        ErrorResponse.builder()
-            .status(BAD_REQUEST.value())
-            .error(BAD_REQUEST.getReasonPhrase())
-            .message(exc.getMessage())
-            .path(request.getDescription(false).substring(4))
-            .build();
-    return ResponseEntity.status(BAD_REQUEST).body(errorResponse);
-  }
-
-  @ExceptionHandler({CollectionAlreadyExistsException.class, IllegalArgumentException.class})
+  @ExceptionHandler({
+    CollectionAlreadyExistsException.class,
+    IllegalArgumentException.class,
+    TestSessionAlreadyExistsException.class,
+    IllegalStateException.class,
+    CollectionInUseException.class
+  })
   public ResponseEntity<ErrorResponse> handleBadRequestException(
       RuntimeException exc, WebRequest request) {
     ErrorResponse errorResponse =
