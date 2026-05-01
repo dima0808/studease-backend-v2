@@ -4,6 +4,7 @@ import static tech.studease.studease.common.util.JwtUtils.getUserFromAuthenticat
 import static tech.studease.studease.common.util.TestUtils.getFinishedSessions;
 import static tech.studease.studease.common.util.TestUtils.getStartedSessions;
 
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -80,16 +81,18 @@ public class TestServiceImpl implements TestService {
   }
 
   @Override
+  @Transactional
   public void deleteById(UUID testId) {
     Test test =
         testRepository.findById(testId).orElseThrow(() -> new TestNotFoundException(testId));
     if (!test.getAuthor().getEmail().equals(getUserFromAuthentication().getEmail())) {
       throw new TestNotFoundException(testId);
     }
-    testRepository.deleteById(testId);
+    testRepository.delete(test);
   }
 
   @Override
+  @Transactional
   public void deleteAllByIds(TestDeleteRequestDto deleteRequest) {
     List<Test> tests = testRepository.findAllById(deleteRequest.getTestIds());
     if (tests.isEmpty()) {

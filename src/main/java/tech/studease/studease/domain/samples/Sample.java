@@ -11,8 +11,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import tech.studease.studease.domain.collections.Collection;
 import tech.studease.studease.domain.tests.Test;
 
@@ -33,10 +31,8 @@ public class Sample {
   private Integer questionsCount;
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @OnDelete(action = OnDeleteAction.CASCADE)
   private Collection collection;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @OnDelete(action = OnDeleteAction.CASCADE)
   private Test test;
 }
