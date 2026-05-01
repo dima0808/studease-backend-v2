@@ -57,9 +57,7 @@ public class Test {
 
   @OneToMany(
       mappedBy = "test",
-      fetch = FetchType.EAGER,
-      orphanRemoval = true,
-      cascade = CascadeType.ALL)
+      fetch = FetchType.EAGER)
   private Set<Sample> samples;
 
   @ManyToOne(fetch = FetchType.LAZY)
