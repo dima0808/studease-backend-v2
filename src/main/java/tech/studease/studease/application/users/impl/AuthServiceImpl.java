@@ -1,7 +1,6 @@
 package tech.studease.studease.application.users.impl;
 
-import static tech.studease.studease.common.util.JwtUtils.getUserFromAuthentication;
-
+import io.jsonwebtoken.JwtException;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +17,7 @@ import tech.studease.studease.api.users.dto.UserLoginRequestDto;
 import tech.studease.studease.api.users.dto.UserRegisterRequestDto;
 import tech.studease.studease.application.users.AuthService;
 import tech.studease.studease.application.users.mapper.UserMapper;
+import tech.studease.studease.common.security.CurrentUser;
 import tech.studease.studease.common.util.JwtUtils;
 import tech.studease.studease.domain.users.Authority;
 import tech.studease.studease.domain.users.Authority.AuthorityName;
@@ -38,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
   private final PasswordEncoder passwordEncoder;
   private final UserDetailsService userDetailsService;
   private final UserMapper userMapper;
+  private final CurrentUser currentUser;
 
   @Override
   public UserJwtTokenDto register(UserRegisterRequestDto userRequestDto) {
@@ -76,23 +77,26 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public UserDto getCurrentUser() {
-    User user = getUserFromAuthentication();
-    return userMapper.toUserDto(user);
+    return userMapper.toUserDto(currentUser.require());
   }
 
   @Override
   public void authenticate(String authorizationHeader) {
-    String token = jwtUtils.parseJwt(authorizationHeader);
-
-    if (token != null && jwtUtils.validateToken(token)) {
-      String username = jwtUtils.extractClaims(token).getSubject();
-      UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-      if (userDetails == null) {
-        return;
-      }
-      UsernamePasswordAuthenticationToken authentication =
-          new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-      SecurityContextHolder.getContext().setAuthentication(authentication);
+    String token = jwtUtils.resolveBearerToken(authorizationHeader);
+    if (token == null) {
+      return;
     }
+
+    String username;
+    try {
+      username = jwtUtils.extractSubject(token);
+    } catch (JwtException ex) {
+      return;
+    }
+
+    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+    UsernamePasswordAuthenticationToken authentication =
+        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+    SecurityContextHolder.getContext().setAuthentication(authentication);
   }
 }
